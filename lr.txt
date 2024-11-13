@@ -41,3 +41,85 @@ group:tempgrp:rwx               #effective:r-x
 mask::r-x
 other::r-x
 
+mask устанавливает эффективные максимальные права доступа для всех пользователей и групп, порписанных в ACL 
+Пользователи сохраняют свои настройки ACL но работают только с правами определяемыми настройками mask 
+
+Измерение mask -m m:rwx ../stickybit/
+
+Исключение пользователя или группы из ACL: 
+-х u:tmp3 ./ (для пользователя)
+-x g:tempgrp ./ (для группы)
+
+Сброс всех ACL: 
+setfacl -b tmp3 ./
+
+Установка наследования ACL по умолчанию:
+setfacl 
+
+
+Пример применения ACL по умолчанию:
+
+getfacl PvtF/
+# file: PvtF/
+# owner: student
+# group: student
+user::rwx
+group::rwx
+other::r--
+default:user::rwx
+default:user:tmp3:r--
+default:user:tmp4:r--
+default:group::rwx
+default:mask::rwx
+default:other::r-x
+
+student@alexander-VirtualBox:~/ACL$ setfacl -m u:tmp4:r-x PvtF/
+student@alexander-VirtualBox:~/ACL$ su tmp3
+Пароль: 
+tmp3@alexander-VirtualBox:/home/student/ACL$ cd PvtF/
+bash: cd: PvtF/: Отказано в доступе
+tmp3@alexander-VirtualBox:/home/student/ACL$ exit
+exit
+student@alexander-VirtualBox:~/ACL$ su tmp4
+Пароль: 
+tmp4@alexander-VirtualBox:/home/student/ACL$ cd PvtF/
+tmp4@alexander-VirtualBox:/home/student/ACL/PvtF$ exit
+exit
+student@alexander-VirtualBox:~/ACL$ mkdir F1
+student@alexander-VirtualBox:~/ACL$ cd PvtF/
+student@alexander-VirtualBox:~/ACL/PvtF$ mkdir F1
+student@alexander-VirtualBox:~/ACL/PvtF$ touch f1
+student@alexander-VirtualBox:~/ACL/PvtF$ ls -l
+итого 8
+-rw-rw-r--+ 1 student student    0 ноя 13 11:33 f1
+drwxrwxr-x+ 2 student student 4096 ноя 13 11:33 F1
+student@alexander-VirtualBox:~/ACL/PvtF$ getfacl F1
+# file: F1
+# owner: student
+# group: student
+user::rwx
+user:tmp3:r--
+user:tmp4:r--
+group::rwx
+mask::rwx
+other::r-x
+default:user::rwx
+default:user:tmp3:r--
+default:user:tmp4:r--
+default:group::rwx
+default:mask::rwx
+default:other::r-x
+
+student@alexander-VirtualBox:~/ACL/PvtF$ getfacl f1
+# file: f1
+# owner: student
+# group: student
+user::rw-
+user:tmp3:r--
+user:tmp4:r--
+group::rwx			#effective:rw-
+mask::rw-
+other::r--
+
+student@alexander-VirtualBox:~/ACL/PvtF$ 
+
